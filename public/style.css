@@ -281,10 +281,6 @@ body.chat-active { overflow: hidden; height: 100%; }
      reads as a subtle texture rather than competing with message bubbles. */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1' opacity='0.05'%3E%3Ccircle cx='20' cy='24' r='7'/%3E%3Cpath d='M58 12 q10 10 0 20 q-10 -10 0 -20'/%3E%3Crect x='84' y='70' width='16' height='16' rx='3'/%3E%3Cpath d='M14 88 l10 10 M24 88 l-10 10'/%3E%3Ccircle cx='96' cy='28' r='3'/%3E%3Cpath d='M42 100 q8 -14 16 0'/%3E%3Cpath d='M70 44 l6 6 -6 6 -6 -6 z'/%3E%3C/g%3E%3C/svg%3E");
 }
-.encryption-notice {
-  align-self: center; max-width: 85%; text-align: center; background: var(--card-bg); border: 1px solid var(--border);
-  color: #e0c66b; font-size: 0.78rem; line-height: 1.4; padding: 10px 14px; border-radius: 8px; margin: 4px 0 8px;
-}
 .date-separator {
   align-self: center; background: var(--card-bg); border: 1px solid var(--border);
   color: var(--muted); font-size: 0.72rem; font-weight: 600;

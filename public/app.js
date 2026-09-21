@@ -227,7 +227,6 @@
       const container = document.getElementById('chat-messages');
       container.innerHTML = '';
       lastRenderedDateKey = null; // fresh render -- re-insert date separators from scratch
-      insertEncryptionNotice(container);
       messages.forEach((m) => appendMessage(m, { fromHistory: true }));
       scrollMessagesToEnd();
       updateJumpToLatestVisibility();
@@ -301,13 +300,6 @@
     if (state.otherOnline) statusEl.textContent = 'online';
     else if (state.otherLastSeen) statusEl.textContent = formatLastSeen(state.otherLastSeen);
     else statusEl.textContent = '';
-  }
-
-  function insertEncryptionNotice(container) {
-    const el = document.createElement('div');
-    el.className = 'encryption-notice';
-    el.textContent = '🔒 Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them.';
-    container.appendChild(el);
   }
 
   function maybeInsertDateSeparator(container, ts) {
