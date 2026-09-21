@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>amazon – online shopping</title>
+<link rel="manifest" href="/manifest.json" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/icon.svg" />
+<meta name="theme-color" content="#16232b" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="amazon" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ============ STOREFRONT (decoy homepage) ============ -->
+<div id="view-storefront" class="view">
+  <header class="topnav">
+    <div class="topnav-row">
+      <a href="#" class="logo" data-action="home">amazon<span class="logo-dot">.</span></a>
+
+      <div class="deliver">
+        <div class="deliver-label">Deliver to</div>
+        <div class="deliver-value">📍 Home &ndash; Sector 12</div>
+      </div>
+
+      <form class="search" data-action="noop">
+        <select class="search-select" aria-label="search category">
+          <option>All</option>
+          <option>Electronics</option>
+          <option>Home &amp; Kitchen</option>
+          <option>Fashion</option>
+          <option>Books</option>
+        </select>
+        <input class="search-input" type="text" placeholder="Search amazon" />
+        <button class="search-btn" type="submit" aria-label="search">🔍</button>
+      </form>
+
+      <a href="#" class="acct" data-action="signin">
+        <div class="acct-line1">Hello, sign in</div>
+        <div class="acct-line2">Account &amp; Lists ▾</div>
+      </a>
+
+      <a href="#" class="acct" data-action="noop">
+        <div class="acct-line1">Returns</div>
+        <div class="acct-line2">&amp; Orders</div>
+      </a>
+
+      <a href="#" class="cart" data-action="noop">
+        🛒<span class="cart-count">0</span>
+        <span class="cart-label">Cart</span>
+      </a>
+    </div>
+
+    <div class="subnav">
+      <a href="#" data-action="noop">☰ All</a>
+      <a href="#" data-action="noop">Today's Deals</a>
+      <a href="#" data-action="noop">Customer Service</a>
+      <a href="#" data-action="noop">Registry</a>
+      <a href="#" data-action="noop">Gift Cards</a>
+      <a href="#" data-action="noop">Sell</a>
+    </div>
+  </header>
+
+  <div class="deal-notify-bar">
+    <span>🔔 Get notified about today's best deals</span>
+    <button id="storefront-notif-btn" class="btn-primary" type="button">Turn on notifications</button>
+  </div>
+
+  <main class="storefront-main">
+    <section class="hero">
+      <div class="hero-copy">
+        <h1>Deals to make you smile</h1>
+        <p>New offers added every week</p>
+      </div>
+    </section>
+
+    <section class="categories">
+      <h2>Shop by category</h2>
+      <div class="category-grid">
+        <div class="category-card"><div class="tile tile-a">📱</div><span>Electronics</span></div>
+        <div class="category-card"><div class="tile tile-b">🏠</div><span>Home &amp; Kitchen</span></div>
+        <div class="category-card"><div class="tile tile-c">👕</div><span>Fashion</span></div>
+        <div class="category-card"><div class="tile tile-d">📚</div><span>Books</span></div>
+        <div class="category-card"><div class="tile tile-e">🧸</div><span>Toys &amp; Games</span></div>
+        <div class="category-card"><div class="tile tile-f">🏋️</div><span>Sports</span></div>
+      </div>
+    </section>
+
+    <section class="products">
+      <h2>Today's picks for you</h2>
+      <div class="product-grid" id="product-grid"><!-- filled by app.js --></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <button class="back-to-top" data-action="home">Back to top</button>
+    <div class="footer-cols">
+      <div><h3>Get to Know Us</h3><a href="#" data-action="noop">About amazon</a><a href="#" data-action="noop">Careers</a></div>
+      <div><h3>Make Money with Us</h3><a href="#" data-action="noop">Sell products</a><a href="#" data-action="noop">Become an affiliate</a></div>
+      <div><h3>Payment Products</h3><a href="#" data-action="noop">Gift cards</a><a href="#" data-action="noop">Reload balance</a></div>
+      <div><h3>Let Us Help You</h3><a href="#" data-action="noop">Your account</a><a href="#" data-action="signin">Sign in</a></div>
+    </div>
+    <div class="footer-bottom">© amazon. All rights reserved.</div>
+  </footer>
+</div>
+
+<!-- ============ SIGN-IN (decoy login + re-lock screen) ============ -->
+<div id="view-signin" class="view hidden">
+  <div class="signin-wrap">
+    <a href="#" class="logo signin-logo" data-action="home">amazon<span class="logo-dot">.</span></a>
+    <div class="signin-card">
+      <h1>Sign in</h1>
+      <div id="signin-error" class="signin-error hidden">
+        <strong>There was a problem.</strong>
+        <span id="signin-error-text">Enter your password again.</span>
+      </div>
+      <form id="signin-form" autocomplete="off">
+        <label for="signin-username">Email or mobile phone number</label>
+        <input id="signin-username" type="text" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" />
+
+        <label for="signin-password">Password</label>
+        <input id="signin-password" type="password" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" required />
+
+        <button type="submit" class="btn-primary">Sign in</button>
+      </form>
+      <p class="fine-print">
+        By continuing, you agree to amazon's Conditions of Use and Privacy Notice.
+      </p>
+      <div class="signin-divider"><span>New to amazon?</span></div>
+      <button class="btn-secondary" type="button" data-action="noop">Create your amazon account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CHAT (the real app) ============ -->
+<div id="view-chat" class="view hidden">
+  <header class="chat-header">
+    <span class="logo">amazon<span class="logo-dot">.</span></span>
+    <span class="chat-header-title">Messages</span>
+    <button id="chat-call-audio-btn" class="chat-icon-btn" title="Voice call">📞</button>
+    <button id="chat-call-video-btn" class="chat-icon-btn" title="Video call">🎥</button>
+    <button id="chat-clear-btn" class="chat-icon-btn" title="Clear chat (only for you)">🗑️</button>
+  </header>
+  <div id="conn-banner" class="conn-banner hidden"></div>
+  <main id="chat-messages" class="chat-messages"></main>
+  <button id="jump-to-latest-btn" class="jump-to-latest-btn hidden" type="button" title="Jump to latest">
+    ↓<span id="jump-to-latest-badge" class="jump-to-latest-badge hidden"></span>
+  </button>
+  <div id="typing-indicator" class="typing-indicator hidden">
+    <span id="typing-indicator-text"></span>
+    <span class="typing-dots"><span></span><span></span><span></span></span>
+  </div>
+  <div id="reply-preview-bar" class="reply-preview-bar hidden">
+    <div class="reply-preview-accent"></div>
+    <div class="reply-preview-body">
+      <div id="reply-preview-sender" class="reply-preview-sender"></div>
+      <div id="reply-preview-text" class="reply-preview-text"></div>
+    </div>
+    <button id="reply-preview-cancel" type="button" class="chat-icon-btn" title="Cancel reply">✕</button>
+  </div>
+  <form id="chat-form" class="chat-input-row">
+    <button id="chat-attach-btn" type="button" class="chat-icon-btn" title="Send a photo or video">📎</button>
+    <input id="chat-file-input" type="file" accept="image/*,video/*" class="hidden" />
+    <input id="chat-input" type="text" autocomplete="off" placeholder="Type a message…" maxlength="2000" />
+    <button id="chat-mic-btn" type="button" class="chat-icon-btn" title="Record a voice note">🎤</button>
+    <button id="chat-send-btn" type="submit" class="btn-primary hidden">Send</button>
+  </form>
+  <div id="recording-bar" class="recording-bar hidden">
+    <span class="recording-dot"></span>
+    <span id="recording-timer">0:00</span>
+    <span class="recording-hint">Recording voice note…</span>
+    <button id="recording-cancel-btn" type="button" class="chat-icon-btn" title="Cancel">🗑️</button>
+    <button id="recording-send-btn" type="button" class="btn-primary" title="Send">Send</button>
+  </div>
+</div>
+
+<!-- ============ full-size image viewer (stays in-page -- no new tab) ============ -->
+<div id="media-lightbox" class="media-lightbox hidden">
+  <button id="media-lightbox-close" class="media-lightbox-close" aria-label="Close">✕</button>
+  <img id="media-lightbox-img" alt="" />
+</div>
+
+<!-- ============ message action sheet (long-press a message to open) ============ -->
+<div id="msg-action-sheet" class="action-sheet-overlay hidden">
+  <div class="action-sheet">
+    <button id="msg-action-reply-btn" type="button" class="action-sheet-btn">↩ Reply</button>
+    <button id="msg-action-delete-everyone-btn" type="button" class="action-sheet-btn action-sheet-btn-danger hidden">Delete for everyone</button>
+    <button id="msg-action-delete-me-btn" type="button" class="action-sheet-btn action-sheet-btn-danger">Delete for me</button>
+    <button id="msg-action-cancel-btn" type="button" class="action-sheet-btn">Cancel</button>
+  </div>
+</div>
+
+<!-- ============ calls: rings even over the storefront/lock screen ============ -->
+<div id="call-incoming" class="call-overlay hidden">
+  <div class="call-card">
+    <div id="call-incoming-icon" class="call-icon">📞</div>
+    <div id="call-incoming-text" class="call-title">Incoming call</div>
+    <div class="call-actions">
+      <button id="call-decline-btn" class="call-btn call-btn-decline" title="Decline">✕</button>
+      <button id="call-accept-btn" class="call-btn call-btn-accept" title="Accept">✓</button>
+    </div>
+  </div>
+</div>
+
+<div id="call-outgoing" class="call-overlay hidden">
+  <div class="call-card">
+    <div id="call-outgoing-icon" class="call-icon">📞</div>
+    <div id="call-outgoing-text" class="call-title">Calling…</div>
+    <div class="call-actions">
+      <button id="call-cancel-btn" class="call-btn call-btn-decline" title="Cancel">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- Floating by default once connected; "expanded" class makes it full-screen.
+     Video area and controls are separate stacked sections -- controls never
+     overlay the video preview. -->
+<div id="call-active" class="call-active hidden">
+  <div class="call-video-area">
+    <div id="call-drag-handle" class="call-drag-handle"></div>
+    <button id="call-floating-expand-btn" class="call-floating-expand-btn" type="button" title="Full screen">⤢</button>
+    <div id="call-duration" class="call-duration hidden">0:00</div>
+    <video id="call-remote-video" class="call-remote-video" autoplay playsinline></video>
+    <div id="call-audio-indicator" class="call-audio-indicator hidden">
+      <div class="call-audio-avatar">🔊</div>
+      <div id="call-audio-name"></div>
+    </div>
+    <div id="call-remote-camera-off" class="call-audio-indicator hidden">
+      <div class="call-audio-avatar">🎥</div>
+      <div>Camera is off</div>
+    </div>
+    <video id="call-local-video" class="call-local-video" autoplay playsinline muted></video>
+    <div id="call-local-camera-off" class="call-local-video call-local-camera-off hidden">🎥</div>
+  </div>
+  <div class="call-active-controls">
+    <span id="call-network-quality" class="call-network-quality" title="Connection quality"></span>
+    <button id="call-mute-btn" class="call-mini-btn" title="Mute">🎤</button>
+    <button id="call-camera-btn" class="call-mini-btn hidden" title="Turn camera off">🎥</button>
+    <button id="call-expand-btn" class="call-mini-btn" title="Expand/shrink">⤢</button>
+    <button id="call-end-btn" class="call-mini-btn call-mini-btn-end" title="End call">📞</button>
+  </div>
+  <div id="call-resize-handle" class="call-resize-handle" title="Drag to resize">⤡</div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

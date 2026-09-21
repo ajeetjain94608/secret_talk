@@ -1,0 +1,11 @@
+{
+  "name": "amazon",
+  "short_name": "amazon",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eaeded",
+  "theme_color": "#16232b",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
