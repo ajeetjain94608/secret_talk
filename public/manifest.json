@@ -1,6 +1,6 @@
 {
-  "name": "amazon",
-  "short_name": "amazon",
+  "name": "Shopwave",
+  "short_name": "Shopwave",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#eaeded",

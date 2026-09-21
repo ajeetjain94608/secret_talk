@@ -11,7 +11,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  let data = { title: 'amazon', body: 'Your order status has updated.' };
+  let data = { title: 'Shopwave', body: 'Your order status has updated.' };
   try {
     if (event.data) data = event.data.json();
   } catch (err) {
@@ -19,9 +19,9 @@ self.addEventListener('push', (event) => {
   }
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'amazon', {
+    self.registration.showNotification(data.title || 'Shopwave', {
       body: data.body || 'Your order status has updated.',
-      tag: 'amazon-update', // collapses multiple pending pushes into one
+      tag: 'shopwave-update', // collapses multiple pending pushes into one
       renotify: true,
     })
   );

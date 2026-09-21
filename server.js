@@ -52,7 +52,7 @@ if (PUSH_ENABLED) {
 // Deliberately generic wording/title -- notifications never reveal who
 // messaged or what was said, so a glance at a lock screen gives nothing away.
 // Rotates through several so it doesn't always read as the same message.
-const NOTIFICATION_TITLE = 'amazon';
+const NOTIFICATION_TITLE = 'Shopwave';
 const NOTIFICATION_BODIES = [
   "Today's deal: don't miss out.",
   'New deals just dropped for you.',
