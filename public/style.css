@@ -244,9 +244,10 @@ body.chat-active { overflow: hidden; height: 100%; }
   font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .chat-contact-status {
-  font-size: 0.74rem; color: rgba(255, 255, 255, 0.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  min-height: 1em;
+  font-size: 0.74rem; color: rgba(255, 255, 255, 0.65); white-space: nowrap; overflow: hidden;
+  min-height: 1em; position: relative;
 }
+.chat-contact-status-text { display: inline-block; white-space: nowrap; will-change: transform; }
 .chat-icon-btn {
   background: transparent; border: none; color: #fff; font-size: 1.2rem; opacity: 0.85;
   width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;

@@ -147,10 +147,19 @@
   // false lock right after signing in. visibilitychange only goes true when
   // the tab/window is actually hidden (minimized, switched away, screen
   // locked), so it doesn't trigger on those in-page popups.
+  // Nothing from inside the chat -- a voice note, a video message -- should
+  // keep playing once the chat itself isn't the thing on screen anymore.
+  function stopAllChatMedia() {
+    document.querySelectorAll('#chat-messages audio.msg-media, #chat-messages video.msg-media').forEach((el) => {
+      if (!el.paused) el.pause();
+    });
+  }
+
   function lockIfNeeded() {
     if (state.currentView === 'chat' && !state.locked) {
       state.locked = true;
       stopTyping();
+      stopAllChatMedia();
       openSignIn();
       // As soon as we're locked, we're no longer "active" -- the server
       // should push-notify us for anything that arrives from here on,
@@ -197,6 +206,7 @@
   // flag of its own the way tab-hide/lockIfNeeded does.
   document.getElementById('chat-back-btn').addEventListener('click', () => {
     stopTyping();
+    stopAllChatMedia();
     showView('storefront');
     if (state.socket) state.socket.emit('presence', { active: false });
   });
@@ -297,9 +307,50 @@
   }
   function renderPresenceStatus() {
     const statusEl = document.getElementById('chat-contact-status');
-    if (state.otherOnline) statusEl.textContent = 'online';
-    else if (state.otherLastSeen) statusEl.textContent = formatLastSeen(state.otherLastSeen);
-    else statusEl.textContent = '';
+    let text = '';
+    if (state.otherOnline) text = 'online';
+    else if (state.otherLastSeen) text = formatLastSeen(state.otherLastSeen);
+
+    // A fresh span each time (rather than reusing one) so any in-flight
+    // transition/transform is thrown away and the scroll below always
+    // restarts from the beginning, e.g. right after a fresh login.
+    statusEl.innerHTML = '';
+    const span = document.createElement('span');
+    span.className = 'chat-contact-status-text';
+    span.textContent = text;
+    statusEl.appendChild(span);
+    if (!text) return;
+
+    // "last seen ... at ..." is often wider than the header has room for --
+    // rather than truncating with an ellipsis, scroll it left just once so
+    // the full line (including the time) becomes readable, then stop.
+    requestAnimationFrame(() => {
+      const overflow = span.scrollWidth - statusEl.clientWidth;
+      if (overflow <= 0) return;
+      const durationSec = Math.min(6, Math.max(1.5, overflow / 40));
+      setTimeout(() => {
+        span.style.transition = `transform ${durationSec}s linear`;
+        span.style.transform = `translateX(-${overflow}px)`;
+      }, 700); // brief pause so the start of the line is readable first
+    });
+  }
+
+  // A voice note recorded with MediaRecorder is a live stream, not a
+  // finalized file -- its container header has no real duration, so Chrome
+  // reports duration as Infinity and the native seek bar won't let you jump
+  // to a specific point. Seeking once to a huge timestamp forces the browser
+  // to walk the whole file and compute the real duration; after that,
+  // seeking anywhere works normally. https://bugs.chromium.org/p/chromium/issues/detail?id=642012
+  function fixSeekableDuration(audioEl) {
+    audioEl.addEventListener('loadedmetadata', function onLoaded() {
+      audioEl.removeEventListener('loadedmetadata', onLoaded);
+      if (audioEl.duration !== Infinity) return;
+      audioEl.currentTime = 1e101;
+      audioEl.addEventListener('timeupdate', function onTimeUpdate() {
+        audioEl.removeEventListener('timeupdate', onTimeUpdate);
+        audioEl.currentTime = 0;
+      }, { once: true });
+    });
   }
 
   function maybeInsertDateSeparator(container, ts) {
@@ -357,6 +408,7 @@
       } else if (m.type === 'audio') {
         media = document.createElement('audio');
         media.controls = true;
+        fixSeekableDuration(media);
       } else {
         media = document.createElement('img');
         media.loading = 'lazy';
