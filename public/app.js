@@ -1279,7 +1279,21 @@
       if (e.candidate && state.socket) state.socket.emit('call:signal', { type: 'candidate', candidate: e.candidate });
     };
     callState.pc.ontrack = (e) => {
-      callEl('call-remote-video').srcObject = e.streams[0];
+      const remoteVideo = callEl('call-remote-video');
+      remoteVideo.srcObject = e.streams[0];
+      // Autoplay policies block an unmuted <video> here because srcObject is
+      // set asynchronously, outside any user-gesture call stack -- start
+      // muted (always allowed) then unmute right after playback begins.
+      remoteVideo.play().then(() => {
+        remoteVideo.muted = false;
+      }).catch(() => {
+        // Even muted autoplay was blocked -- retry on the next tap anywhere.
+        const retry = () => {
+          remoteVideo.play().then(() => { remoteVideo.muted = false; }).catch(() => {});
+          document.removeEventListener('click', retry);
+        };
+        document.addEventListener('click', retry, { once: true });
+      });
     };
     callState.pc.onconnectionstatechange = () => {
       if (callState.pc && callState.pc.connectionState === 'failed') endCall();
