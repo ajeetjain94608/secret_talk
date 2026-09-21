@@ -47,6 +47,9 @@
     locked: false, // true once we've re-shown sign-in on top of an open chat
     myName: null,
     myUserId: null,
+    otherName: null,
+    otherOnline: false,
+    otherLastSeen: null, // ms epoch, only meaningful when otherOnline is false
     otherReadUpToId: 0, // highest message id the OTHER person has seen
     lastReadIdSent: 0, // dedupe so we don't spam mark_read
     socket: null,
@@ -123,9 +126,11 @@
     hideSigninError();
     state.myName = data.name;
     state.myUserId = data.id;
+    state.otherName = data.otherName || null;
     state.everSignedIn = true;
     state.locked = false;
     document.getElementById('signin-password').value = '';
+    renderContactHeader();
 
     if (!state.socket) connectSocket();
     showView('chat');
@@ -169,12 +174,31 @@
   // "Clear chat" only wipes this device/person's own view -- it never
   // touches what the other person sees, and it's not reversible for you.
   document.getElementById('chat-clear-btn').addEventListener('click', () => {
+    document.getElementById('chat-menu-dropdown').classList.add('hidden');
     if (!state.socket) return;
     const confirmed = window.confirm(
       'Clear chat for you?\n\nThis only clears your own view — your friend will still see the full history.'
     );
     if (!confirmed) return;
     state.socket.emit('clear_chat');
+  });
+
+  document.getElementById('chat-menu-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('chat-menu-dropdown').classList.toggle('hidden');
+  });
+  document.addEventListener('click', () => {
+    document.getElementById('chat-menu-dropdown').classList.add('hidden');
+  });
+
+  // Back leaves the chat view for the storefront disguise, same as closing
+  // the app -- getting back in always goes through the sign-in form again
+  // (there's no other route back into #view-chat), so this needs no lock
+  // flag of its own the way tab-hide/lockIfNeeded does.
+  document.getElementById('chat-back-btn').addEventListener('click', () => {
+    stopTyping();
+    showView('storefront');
+    if (state.socket) state.socket.emit('presence', { active: false });
   });
 
   // ---------- socket / chat ----------
@@ -203,6 +227,7 @@
       const container = document.getElementById('chat-messages');
       container.innerHTML = '';
       lastRenderedDateKey = null; // fresh render -- re-insert date separators from scratch
+      insertEncryptionNotice(container);
       messages.forEach((m) => appendMessage(m, { fromHistory: true }));
       scrollMessagesToEnd();
       updateJumpToLatestVisibility();
@@ -234,6 +259,12 @@
     state.socket.on('typing', ({ name }) => showTypingIndicator(name));
     state.socket.on('stop_typing', () => hideTypingIndicator());
     state.socket.on('message_deleted', handleMessageDeleted);
+    state.socket.on('presence_update', ({ userId, online, lastSeen }) => {
+      if (userId === state.myUserId) return;
+      state.otherOnline = online;
+      if (lastSeen) state.otherLastSeen = lastSeen;
+      renderPresenceStatus();
+    });
     wireCallSocketEvents();
   }
 
@@ -254,6 +285,31 @@
     const sameYear = d.getFullYear() === today.getFullYear();
     return d.toLocaleDateString([], sameYear ? { month: 'long', day: 'numeric' } : { month: 'long', day: 'numeric', year: 'numeric' });
   }
+  // ---------- contact header: name, avatar, online/last-seen ----------
+  function renderContactHeader() {
+    if (!state.otherName) return;
+    document.getElementById('chat-contact-name').textContent = state.otherName;
+    document.getElementById('chat-contact-avatar').textContent = state.otherName.charAt(0).toUpperCase();
+    renderPresenceStatus();
+  }
+  function formatLastSeen(ts) {
+    const time = new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return `last seen ${formatDateLabel(ts).toLowerCase()} at ${time}`;
+  }
+  function renderPresenceStatus() {
+    const statusEl = document.getElementById('chat-contact-status');
+    if (state.otherOnline) statusEl.textContent = 'online';
+    else if (state.otherLastSeen) statusEl.textContent = formatLastSeen(state.otherLastSeen);
+    else statusEl.textContent = '';
+  }
+
+  function insertEncryptionNotice(container) {
+    const el = document.createElement('div');
+    el.className = 'encryption-notice';
+    el.textContent = '🔒 Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them.';
+    container.appendChild(el);
+  }
+
   function maybeInsertDateSeparator(container, ts) {
     const key = getDateKey(ts);
     if (key === lastRenderedDateKey) return;

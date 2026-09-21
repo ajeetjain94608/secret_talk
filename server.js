@@ -18,6 +18,8 @@ const {
   clearChatForUser,
   getReadUpToId,
   markReadUpToId,
+  getLastSeen,
+  setLastSeen,
   savePushSubscription,
   getPushSubscriptionsForOthers,
   getSubscriptionCountForUser,
@@ -254,7 +256,9 @@ function handleAuth(req, res) {
       console.error('Session save error:', err);
       return res.status(500).json({ ok: false, error: 'Something went wrong. Please try again.' });
     }
-    res.json({ ok: true, name: account.name, id: account.id });
+    const otherId = getOtherAccountId(account.id);
+    const other = ACCOUNTS.find((a) => a.id === otherId);
+    res.json({ ok: true, name: account.name, id: account.id, otherName: other ? other.name : null });
   });
 }
 
@@ -348,7 +352,20 @@ io.on('connection', (socket) => {
     return;
   }
 
+  const wasConnected = isConnected(req.session.user);
   setConnected(req.session.user, socket.id, true);
+  if (!wasConnected) {
+    // First socket for this user coming up -- tell the other side "online" now.
+    socket.broadcast.emit('presence_update', { userId: req.session.user, online: true, lastSeen: null });
+  }
+  // Let this newly-connecting client know the other person's CURRENT status
+  // right away, since presence_update above only fires on a change and a
+  // fresh page load wouldn't otherwise see one.
+  const peerId = getOtherAccountId(req.session.user);
+  if (peerId) {
+    const peerOnline = isConnected(peerId);
+    socket.emit('presence_update', { userId: peerId, online: peerOnline, lastSeen: peerOnline ? null : getLastSeen(peerId) });
+  }
 
   // Starts inactive -- the client reports itself active only once the chat
   // is actually shown, unlocked and visible (see the 'presence' handler).
@@ -358,6 +375,13 @@ io.on('connection', (socket) => {
     // If a call was in progress and this was the only connection, the other
     // side needs to know it just dropped rather than ringing/hanging forever.
     socket.broadcast.emit('call:ended');
+    // Only truly "last seen" once every socket/tab for this user is gone --
+    // one tab closing while another stays open shouldn't flip them offline.
+    if (!isConnected(req.session.user)) {
+      const seenAt = Date.now();
+      setLastSeen(req.session.user, seenAt);
+      socket.broadcast.emit('presence_update', { userId: req.session.user, online: false, lastSeen: seenAt });
+    }
   });
 
   socket.on('presence', (payload) => {

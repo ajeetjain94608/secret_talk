@@ -50,6 +50,15 @@ db.exec(`
     message_id INTEGER NOT NULL,
     PRIMARY KEY (user_id, message_id)
   );
+
+  -- "Last seen": the moment a user's last socket disconnected (i.e. they
+  -- fully closed/backgrounded the app, not just this specific chat screen).
+  -- Read by the OTHER account to show "last seen ..." in the chat header
+  -- whenever this user isn't currently online.
+  CREATE TABLE IF NOT EXISTS last_seen (
+    user_id TEXT PRIMARY KEY,
+    seen_at INTEGER NOT NULL
+  );
 `);
 
 // Migration for image/video support -- ALTER TABLE ADD COLUMN so this also
@@ -178,6 +187,21 @@ function markReadUpToId(userId, upToId) {
   return next;
 }
 
+const getLastSeenStmt = db.prepare('SELECT seen_at FROM last_seen WHERE user_id = ?');
+const upsertLastSeenStmt = db.prepare(`
+  INSERT INTO last_seen (user_id, seen_at) VALUES (?, ?)
+  ON CONFLICT(user_id) DO UPDATE SET seen_at = excluded.seen_at
+`);
+
+function getLastSeen(userId) {
+  const row = getLastSeenStmt.get(userId);
+  return row ? row.seen_at : null;
+}
+
+function setLastSeen(userId, seenAt) {
+  upsertLastSeenStmt.run(userId, seenAt);
+}
+
 const upsertSubStmt = db.prepare(`
   INSERT INTO push_subscriptions (user_id, endpoint, subscription, created_at)
   VALUES (@user_id, @endpoint, @subscription, @created_at)
@@ -221,6 +245,8 @@ module.exports = {
   clearChatForUser,
   getReadUpToId,
   markReadUpToId,
+  getLastSeen,
+  setLastSeen,
   savePushSubscription,
   getPushSubscriptionsForOthers,
   getSubscriptionCountForUser,

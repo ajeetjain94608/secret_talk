@@ -221,18 +221,47 @@ body.chat-active { overflow: hidden; height: 100%; }
   min-height: 0; /* cancels the shared .view{min-height:100vh} rule, which overshoots on mobile and re-pushes the input off-screen */
   display: flex; flex-direction: column;
   background: var(--page-bg);
+  /* Scoped so only the chat screen reads WhatsApp-green -- the storefront/
+     sign-in disguise elsewhere in the file keeps its gold theme. */
+  --accent: #25d366;
+  --accent-dark: #1da851;
 }
 .chat-header {
-  background: var(--nav-bg); color: #fff; display: flex; align-items: center; gap: 12px;
-  padding: calc(10px + var(--safe-top)) 16px 10px; flex: 0 0 auto;
+  background: var(--nav-bg); color: #fff; display: flex; align-items: center; gap: 10px;
+  padding: calc(10px + var(--safe-top)) 10px 10px; flex: 0 0 auto;
 }
-.chat-header .logo { font-size: 1.1rem; }
-.chat-header-title { font-size: 0.9rem; opacity: 0.85; flex: 1; }
+.chat-back-btn {
+  background: transparent; border: none; color: #fff; font-size: 1.4rem; opacity: 0.9;
+  width: 34px; height: 34px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
+}
+.chat-contact-avatar {
+  width: 38px; height: 38px; border-radius: 50%; background: #5b6b7d; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700;
+  flex: 0 0 auto; text-transform: uppercase;
+}
+.chat-contact-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: center; line-height: 1.25; }
+.chat-contact-name {
+  font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-contact-status {
+  font-size: 0.74rem; color: rgba(255, 255, 255, 0.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-height: 1em;
+}
 .chat-icon-btn {
   background: transparent; border: none; color: #fff; font-size: 1.2rem; opacity: 0.85;
-  width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
 }
 .chat-icon-btn:hover { opacity: 1; }
+.chat-menu-wrap { position: relative; flex: 0 0 auto; }
+.chat-menu-dropdown {
+  position: absolute; top: 46px; right: 0; background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 8px; min-width: 170px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4); z-index: 20; overflow: hidden;
+}
+.chat-menu-item {
+  display: block; width: 100%; text-align: left; background: transparent; border: none; color: var(--ink);
+  padding: 12px 14px; font-size: 0.9rem;
+}
+.chat-menu-item:hover { background: var(--input-bg); }
 
 .conn-banner {
   flex: 0 0 auto; text-align: center; font-size: 0.78rem; padding: 6px 12px;
@@ -246,6 +275,15 @@ body.chat-active { overflow: hidden; height: 100%; }
   overflow-y: auto; -webkit-overflow-scrolling: touch;
   padding: 16px; display: flex; flex-direction: column; gap: 8px;
   position: relative; /* anchors the jump-to-latest button below */
+  background-color: var(--page-bg);
+  /* Faint tiled doodle wallpaper, WhatsApp-style -- a plain inline SVG so no
+     extra asset file is needed; opacity is baked into the stroke color so it
+     reads as a subtle texture rather than competing with message bubbles. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1' opacity='0.05'%3E%3Ccircle cx='20' cy='24' r='7'/%3E%3Cpath d='M58 12 q10 10 0 20 q-10 -10 0 -20'/%3E%3Crect x='84' y='70' width='16' height='16' rx='3'/%3E%3Cpath d='M14 88 l10 10 M24 88 l-10 10'/%3E%3Ccircle cx='96' cy='28' r='3'/%3E%3Cpath d='M42 100 q8 -14 16 0'/%3E%3Cpath d='M70 44 l6 6 -6 6 -6 -6 z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.encryption-notice {
+  align-self: center; max-width: 85%; text-align: center; background: var(--card-bg); border: 1px solid var(--border);
+  color: #e0c66b; font-size: 0.78rem; line-height: 1.4; padding: 10px 14px; border-radius: 8px; margin: 4px 0 8px;
 }
 .date-separator {
   align-self: center; background: var(--card-bg); border: 1px solid var(--border);
@@ -270,7 +308,7 @@ body.chat-active { overflow: hidden; height: 100%; }
   position: relative; touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
-.msg-mine { align-self: flex-end; background: #16332e; border-color: #235049; }
+.msg-mine { align-self: flex-end; background: #005c4b; border-color: #0a6f5c; }
 .msg.msg-pressed { background-color: rgba(255, 255, 255, 0.12); } /* brief feedback while a long-press is building up */
 .msg.msg-selected { outline: 2px solid var(--accent); outline-offset: 1px; }
 .msg-swipe-hint {
@@ -386,6 +424,10 @@ audio.msg-media {
   background: var(--input-bg); color: var(--ink);
 }
 #chat-input:focus { outline: 2px solid #3399ff; border-color: #3399ff; }
+#chat-mic-btn {
+  background: var(--accent); color: #0b1410; border-radius: 50%; width: 42px; height: 42px; flex: 0 0 auto;
+}
+#chat-mic-btn:hover { background: var(--accent-dark); opacity: 1; }
 
 .recording-bar {
   display: flex; align-items: center; gap: 10px; padding: 10px 14px calc(10px + var(--safe-bottom));
@@ -401,7 +443,11 @@ audio.msg-media {
 #recording-timer { font-variant-numeric: tabular-nums; font-size: 0.9rem; }
 .recording-hint { color: var(--muted); font-size: 0.85rem; flex: 1; }
 .recording-bar .btn-primary { margin-top: 0; padding: 0 18px; }
-.chat-input-row .btn-primary { margin-top: 0; padding: 0 18px; min-width: 64px; }
+.chat-input-row .btn-primary {
+  margin-top: 0; padding: 0; min-width: 42px; width: 42px; height: 42px; border-radius: 50%; border: none;
+  background: var(--accent); color: #0b1410; font-size: 0.7rem;
+}
+.chat-input-row .btn-primary:hover { background: var(--accent-dark); }
 
 /* ---------------- touch target + mobile tune-ups ---------------- */
 button, .acct, .cart, a[data-action] {

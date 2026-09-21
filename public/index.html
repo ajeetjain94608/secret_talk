@@ -139,11 +139,20 @@
 <!-- ============ CHAT (the real app) ============ -->
 <div id="view-chat" class="view hidden">
   <header class="chat-header">
-    <span class="logo">Shopwave<span class="logo-dot">.</span></span>
-    <span class="chat-header-title">Messages</span>
-    <button id="chat-call-audio-btn" class="chat-icon-btn" title="Voice call">📞</button>
+    <button id="chat-back-btn" class="chat-back-btn" type="button" title="Back">←</button>
+    <div id="chat-contact-avatar" class="chat-contact-avatar">?</div>
+    <div class="chat-contact-info">
+      <span id="chat-contact-name" class="chat-contact-name">Messages</span>
+      <span id="chat-contact-status" class="chat-contact-status"></span>
+    </div>
     <button id="chat-call-video-btn" class="chat-icon-btn" title="Video call">🎥</button>
-    <button id="chat-clear-btn" class="chat-icon-btn" title="Clear chat (only for you)">🗑️</button>
+    <button id="chat-call-audio-btn" class="chat-icon-btn" title="Voice call">📞</button>
+    <div class="chat-menu-wrap">
+      <button id="chat-menu-btn" class="chat-icon-btn" type="button" title="More options">⋮</button>
+      <div id="chat-menu-dropdown" class="chat-menu-dropdown hidden">
+        <button id="chat-clear-btn" class="chat-menu-item" type="button">Clear chat</button>
+      </div>
+    </div>
   </header>
   <div id="conn-banner" class="conn-banner hidden"></div>
   <main id="chat-messages" class="chat-messages"></main>
