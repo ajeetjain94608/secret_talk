@@ -292,7 +292,7 @@
     renderPresenceStatus();
   }
   function formatLastSeen(ts) {
-    const time = new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const time = new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
     return `last seen ${formatDateLabel(ts).toLowerCase()} at ${time}`;
   }
   function renderPresenceStatus() {
