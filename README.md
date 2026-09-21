@@ -1,8 +1,14 @@
-# amazon
+# secret_talk
 
 A private, real-time, 2-person chat that's disguised as an ordinary online
-storefront. The homepage and "Sign In" page look like a generic shopping
-site; entering the correct password swaps in the real chat.
+storefront. To anyone else, it just looks like a generic shopping site.
+Only the two of you know that typing the right password swaps in a real
+chat — with calls, voice notes, photos, and push notifications.
+
+Deploy your own copy in a few minutes, free, and you and one other person
+get a private line that looks like nothing at all.
+
+## What it does
 
 - Each person has their **own password** (set via environment variables). The
   password you type determines your display name — there's no separate
@@ -41,7 +47,15 @@ site; entering the correct password swaps in the real chat.
   call too — mobile browsers pause camera/mic access for backgrounded tabs,
   which isn't something fixable from the app side.
 
-## 1. Configure your passwords
+## Deploy your own
+
+Want your own private chat like this with someone? Fork this repo — it
+takes about 10 minutes, entirely free, and only you and whoever you share it
+with will ever see the real chat behind the storefront.
+
+### 1. Fork it and configure your passwords
+
+Fork this repository, then locally:
 
 ```
 cp .env.example .env
@@ -64,7 +78,8 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 Use two genuinely different, non-guessable passwords — this is the only
-thing standing between a stranger and your messages.
+thing standing between a stranger and your messages. (`.env` is already
+gitignored, so these never get pushed to your fork.)
 
 ### Optional: enable push notifications
 
@@ -94,7 +109,7 @@ will not deliver background notifications on iOS — this is an Apple platform
 restriction, not something fixable from the app side. Android (Chrome) gets
 full background push with no extra steps.
 
-## 2. Run it locally
+### 2. Run it locally
 
 ```
 npm install
@@ -105,18 +120,16 @@ Open http://localhost:3000 — you'll see the storefront homepage. Click
 "Sign in", enter either password (the username field is ignored), and the
 chat appears.
 
-## 3. Deploy to Render (free tier)
+### 3. Deploy to Render (free tier)
 
-1. Push this folder to a **private** GitHub repository (keep it private —
-   don't put real passwords in `.env`, which is already gitignored).
-2. On [render.com](https://render.com), create a new **Web Service** and
-   connect that repo.
-3. Build command: `npm install`. Start command: `npm start`.
-4. Under the service's **Environment** tab, add the same variables from your
+1. On [render.com](https://render.com), create a new **Web Service** and
+   connect your fork of this repo.
+2. Build command: `npm install`. Start command: `npm start`.
+3. Under the service's **Environment** tab, add the same variables from your
    `.env` file (`PASSWORD_A`, `NAME_A`, `PASSWORD_B`, `NAME_B`,
    `SESSION_SECRET`, and the `VAPID_*` ones if you set those up) plus
    `NODE_ENV=production`. Don't set `PORT` — Render provides its own.
-5. Deploy. Render gives you a `https://your-app.onrender.com` URL — that's
+4. Deploy. Render gives you a `https://your-app.onrender.com` URL — that's
    the link you and your friend open. On your phone, open that link and use
    "Add to Home Screen" (both iOS and Android) for the most app-like feel —
    and on iPhone, this step is required for push notifications to work at all.
@@ -155,3 +168,8 @@ shopping site — not copied from any specific real company's code, logo, or
 wordmark, so there's no trademark/impersonation risk while still reading as
 "just some shopping site" at a glance. Notifications follow the same rule:
 generic wording only, never the sender or message text.
+
+## Like it?
+
+If you deploy your own and like it, a ⭐ on this repo helps other people
+find it.
