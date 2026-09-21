@@ -1296,7 +1296,11 @@
       });
     };
     callState.pc.onconnectionstatechange = () => {
+      console.log('[call] connectionState:', callState.pc && callState.pc.connectionState);
       if (callState.pc && callState.pc.connectionState === 'failed') endCall();
+    };
+    callState.pc.oniceconnectionstatechange = () => {
+      console.log('[call] iceConnectionState:', callState.pc && callState.pc.iceConnectionState);
     };
 
     startNetworkQualityMonitor();
