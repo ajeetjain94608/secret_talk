@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: secret-talk
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: NAME_A
+        sync: false
+      - key: PASSWORD_A
+        sync: false
+      - key: NAME_B
+        sync: false
+      - key: PASSWORD_B
+        sync: false
