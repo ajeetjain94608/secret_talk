@@ -971,6 +971,7 @@
     stopTyping();
     input.value = '';
     updateSendMicToggle();
+    autoGrowChatInput(); // shrink back down to one line now that it's empty
     input.focus(); // belt-and-suspenders: keep the keyboard open even if focus slipped anyway
   });
 
@@ -1057,8 +1058,28 @@
     document.getElementById('chat-send-btn').classList.toggle('hidden', !hasText);
   }
 
+  // Grows the box with the message -- wraps onto new lines and gets taller
+  // up to the CSS max-height, instead of the text scrolling sideways as one
+  // continuous line.
+  function autoGrowChatInput() {
+    const el = document.getElementById('chat-input');
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+
+  // Enter sends (matching a single-line input's old behavior); Shift+Enter
+  // inserts an actual line break, the standard chat-app convention now that
+  // this is a real multi-line box.
+  document.getElementById('chat-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      document.getElementById('chat-form').requestSubmit();
+    }
+  });
+
   document.getElementById('chat-input').addEventListener('input', (e) => {
     updateSendMicToggle();
+    autoGrowChatInput();
     if (!state.socket) return;
     const value = e.target.value;
     if (value.trim() === '') {
