@@ -156,34 +156,41 @@
   </header>
   <div id="conn-banner" class="conn-banner hidden"></div>
   <main id="chat-messages" class="chat-messages"></main>
-  <button id="jump-to-latest-btn" class="jump-to-latest-btn hidden" type="button" title="Jump to latest">
-    ↓<span id="jump-to-latest-badge" class="jump-to-latest-badge hidden"></span>
-  </button>
-  <div id="typing-indicator" class="typing-indicator hidden">
-    <span id="typing-indicator-text"></span>
-    <span class="typing-dots"><span></span><span></span><span></span></span>
-  </div>
-  <div id="reply-preview-bar" class="reply-preview-bar hidden">
-    <div class="reply-preview-accent"></div>
-    <div class="reply-preview-body">
-      <div id="reply-preview-sender" class="reply-preview-sender"></div>
-      <div id="reply-preview-text" class="reply-preview-text"></div>
+  <!-- Everything below the message list, grouped so the jump-to-latest
+       button (positioned via bottom:100% of this wrapper) always floats
+       just above whatever is actually showing here -- the plain input row,
+       or the reply-preview/recording bar on top of it -- instead of a fixed
+       offset that would overlap once those grow the composer taller. -->
+  <div id="chat-composer-area" class="chat-composer-area">
+    <button id="jump-to-latest-btn" class="jump-to-latest-btn hidden" type="button" title="Jump to latest">
+      ↓<span id="jump-to-latest-badge" class="jump-to-latest-badge hidden"></span>
+    </button>
+    <div id="typing-indicator" class="typing-indicator hidden">
+      <span id="typing-indicator-text"></span>
+      <span class="typing-dots"><span></span><span></span><span></span></span>
     </div>
-    <button id="reply-preview-cancel" type="button" class="chat-icon-btn" title="Cancel reply">✕</button>
-  </div>
-  <form id="chat-form" class="chat-input-row">
-    <button id="chat-attach-btn" type="button" class="chat-icon-btn" title="Send a photo or video">📎</button>
-    <input id="chat-file-input" type="file" accept="image/*,video/*" class="hidden" />
-    <input id="chat-input" type="text" autocomplete="off" placeholder="Type a message…" maxlength="2000" />
-    <button id="chat-mic-btn" type="button" class="chat-icon-btn" title="Record a voice note">🎤</button>
-    <button id="chat-send-btn" type="submit" class="btn-primary hidden">Send</button>
-  </form>
-  <div id="recording-bar" class="recording-bar hidden">
-    <span class="recording-dot"></span>
-    <span id="recording-timer">0:00</span>
-    <span class="recording-hint">Recording voice note…</span>
-    <button id="recording-cancel-btn" type="button" class="chat-icon-btn" title="Cancel">🗑️</button>
-    <button id="recording-send-btn" type="button" class="btn-primary" title="Send">Send</button>
+    <div id="reply-preview-bar" class="reply-preview-bar hidden">
+      <div class="reply-preview-accent"></div>
+      <div class="reply-preview-body">
+        <div id="reply-preview-sender" class="reply-preview-sender"></div>
+        <div id="reply-preview-text" class="reply-preview-text"></div>
+      </div>
+      <button id="reply-preview-cancel" type="button" class="chat-icon-btn" title="Cancel reply">✕</button>
+    </div>
+    <form id="chat-form" class="chat-input-row">
+      <button id="chat-attach-btn" type="button" class="chat-icon-btn" title="Send a photo or video">📎</button>
+      <input id="chat-file-input" type="file" accept="image/*,video/*" class="hidden" />
+      <input id="chat-input" type="text" autocomplete="off" placeholder="Type a message…" maxlength="2000" />
+      <button id="chat-mic-btn" type="button" class="chat-icon-btn" title="Record a voice note">🎤</button>
+      <button id="chat-send-btn" type="submit" class="btn-primary hidden">Send</button>
+    </form>
+    <div id="recording-bar" class="recording-bar hidden">
+      <span class="recording-dot"></span>
+      <span id="recording-timer">0:00</span>
+      <span class="recording-hint">Recording voice note…</span>
+      <button id="recording-cancel-btn" type="button" class="chat-icon-btn" title="Cancel">🗑️</button>
+      <button id="recording-send-btn" type="button" class="btn-primary" title="Send">Send</button>
+    </div>
   </div>
 </div>
 

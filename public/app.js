@@ -1026,6 +1026,10 @@
   }
 
   document.getElementById('chat-messages').addEventListener('scroll', updateJumpToLatestVisibility);
+  // Tapping the button would otherwise focus it, blurring #chat-input and
+  // closing the on-screen keyboard -- preventDefault on the pointer press
+  // (before focus would move) stops that without affecting the click itself.
+  document.getElementById('jump-to-latest-btn').addEventListener('mousedown', (e) => e.preventDefault());
   document.getElementById('jump-to-latest-btn').addEventListener('click', () => {
     const container = document.getElementById('chat-messages');
     container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });

@@ -275,7 +275,6 @@ body.chat-active { overflow: hidden; height: 100%; }
   flex: 1 1 auto; min-height: 0; /* let this shrink & scroll instead of pushing the input off-screen */
   overflow-y: auto; -webkit-overflow-scrolling: touch;
   padding: 16px; display: flex; flex-direction: column; gap: 8px;
-  position: relative; /* anchors the jump-to-latest button below */
   background-color: var(--page-bg);
   /* Faint tiled doodle wallpaper, WhatsApp-style -- a plain inline SVG so no
      extra asset file is needed; opacity is baked into the stroke color so it
@@ -288,8 +287,16 @@ body.chat-active { overflow: hidden; height: 100%; }
   padding: 4px 12px; border-radius: 12px; margin: 4px 0;
 }
 
+.chat-composer-area {
+  position: relative; flex: 0 0 auto; display: flex; flex-direction: column;
+}
 .jump-to-latest-btn {
-  position: absolute; right: 16px; bottom: 12px; z-index: 5;
+  /* Anchored to the composer wrapper's own top edge (bottom: 100%) rather
+     than a fixed pixel offset, so it always sits just above whatever the
+     composer is currently showing -- the plain input row, or that plus a
+     reply-preview/recording bar -- instead of drifting onto the mic/send
+     buttons whenever the composer's height changes. */
+  position: absolute; right: 16px; bottom: 100%; margin-bottom: 12px; z-index: 15;
   width: 38px; height: 38px; border-radius: 50%; border: none;
   background: var(--card-bg); color: var(--ink); font-size: 1.1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
