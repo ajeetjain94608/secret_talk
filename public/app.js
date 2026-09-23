@@ -229,6 +229,16 @@
       // safe to just re-send; the server recognizes the tempId and won't
       // create a duplicate even if the original secretly did get through.
       pendingOutbox.forEach((payload, tempId) => state.socket.emit('send_message', { ...payload, tempId }));
+      // The server only tracks "active" (no push needed) per socket -- a
+      // reconnect (network blip, phone waking a doze-mode connection, a
+      // server restart) creates a brand new socket that starts out counted
+      // as inactive, even though the chat may still be sitting open and
+      // unlocked on screen the whole time. Without this, every reconnect
+      // would silently turn push notifications back on for someone who
+      // never actually left the chat.
+      if (state.currentView === 'chat' && !state.locked) {
+        state.socket.emit('presence', { active: true });
+      }
     });
     state.socket.on('disconnect', () => setConnBanner('offline'));
     state.socket.io.on('reconnect_attempt', () => setConnBanner('connecting'));
