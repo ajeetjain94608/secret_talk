@@ -613,6 +613,7 @@ button, .acct, .cart, a[data-action] {
 .call-mini-btn-end { background: #e0433c; }
 .call-mini-btn.muted { background: #e0433c; }
 .call-mini-btn.cam-off { background: #e0433c; }
+.call-mini-btn:disabled { opacity: 0.5; }
 
 .call-network-quality {
   width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto;

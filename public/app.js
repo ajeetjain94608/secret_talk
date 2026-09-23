@@ -1238,6 +1238,7 @@
     localStream: null,
     connectedAt: null,
     durationTimer: null,
+    videoFacingMode: 'user', // 'user' (front) or 'environment' (back) -- which camera is live
   };
 
   function callEl(id) {
@@ -1378,15 +1379,18 @@
     }
   });
 
+  // "ideal" (not "exact"/min) lets the browser start modestly and the
+  // codec/network layer negotiate upward when bandwidth allows, rather than
+  // insisting on a fixed resolution that a slow network can't carry.
+  function videoConstraintsFor(facingMode) {
+    return { facingMode, width: { ideal: 640, max: 1280 }, height: { ideal: 480, max: 720 }, frameRate: { ideal: 24, max: 30 } };
+  }
+
   async function setupPeerConnection() {
+    callState.videoFacingMode = 'user'; // every new call starts on the front camera
     callState.localStream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      // "ideal" (not "exact"/min) lets the browser start modestly and the
-      // codec/network layer negotiate upward when bandwidth allows, rather
-      // than insisting on a fixed resolution that a slow network can't carry.
-      video: callState.callType === 'video'
-        ? { facingMode: 'user', width: { ideal: 640, max: 1280 }, height: { ideal: 480, max: 720 }, frameRate: { ideal: 24, max: 30 } }
-        : false,
+      video: callState.callType === 'video' ? videoConstraintsFor(callState.videoFacingMode) : false,
     });
     callEl('call-local-video').srcObject = callState.localStream;
     callEl('call-local-video').classList.toggle('hidden', callState.callType !== 'video');
@@ -1500,6 +1504,7 @@
     const isVideo = callState.callType === 'video';
     callEl('call-remote-video').classList.toggle('hidden', !isVideo);
     callEl('call-audio-indicator').classList.toggle('hidden', isVideo);
+    callEl('call-flip-camera-btn').classList.toggle('hidden', !isVideo);
     if (!isVideo) callEl('call-audio-name').textContent = 'Call in progress';
     callEl('call-active').classList.remove('hidden');
     callEl('call-active').classList.remove('expanded');
@@ -1571,6 +1576,8 @@
     callEl('call-camera-btn').classList.remove('cam-off');
     callEl('call-local-camera-off').classList.add('hidden');
     callEl('call-remote-camera-off').classList.add('hidden');
+    callEl('call-flip-camera-btn').classList.add('hidden');
+    callEl('call-flip-camera-btn').disabled = false;
     const quality = callEl('call-network-quality');
     if (quality) quality.className = 'call-network-quality';
   }
@@ -1598,6 +1605,38 @@
   document.getElementById('call-expand-btn').addEventListener('click', () => {
     callEl('call-active').classList.toggle('expanded');
   });
+
+  // Swaps the outgoing video track for one from the other camera via
+  // RTCRtpSender.replaceTrack -- no renegotiation, no interruption to the
+  // call, just a live camera switch like a native calling app. Fetches the
+  // new camera stream BEFORE touching the old one, so a device with only
+  // one camera (or that rejects the other facingMode) just silently keeps
+  // the current camera instead of losing video entirely.
+  async function flipCamera() {
+    if (!callState.localStream || callState.callType !== 'video') return;
+    const oldTrack = callState.localStream.getVideoTracks()[0];
+    if (!oldTrack) return;
+
+    const btn = callEl('call-flip-camera-btn');
+    btn.disabled = true;
+    const nextFacingMode = callState.videoFacingMode === 'user' ? 'environment' : 'user';
+    try {
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraintsFor(nextFacingMode) });
+      const newTrack = newStream.getVideoTracks()[0];
+      const sender = callState.pc && callState.pc.getSenders().find((s) => s.track && s.track.kind === 'video');
+      if (sender) await sender.replaceTrack(newTrack);
+      callState.localStream.removeTrack(oldTrack);
+      oldTrack.stop();
+      callState.localStream.addTrack(newTrack);
+      callState.videoFacingMode = nextFacingMode;
+    } catch (err) {
+      // No other camera to switch to (or the browser/device doesn't support
+      // it) -- not worth interrupting the call over, just keep this one.
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  document.getElementById('call-flip-camera-btn').addEventListener('click', flipCamera);
 
   // Dragging the floating call widget (not while expanded to full-screen).
   // Tapping the floating bubble reveals a full-screen button (auto-hiding
