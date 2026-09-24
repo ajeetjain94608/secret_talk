@@ -104,30 +104,6 @@ function rememberTempId(tempId, message) {
   }
 }
 
-// Separate from activeSockets above: this just tracks "is the app open at
-// all" (any connected socket), regardless of whether the chat is locked or
-// visible. Calls should be able to ring even if the recipient's chat is
-// currently locked -- like a phone ringing with the screen off -- so this
-// deliberately uses a looser bar than the notification gating does.
-const connectedSockets = new Map(); // userId -> Set of socket.id
-
-function isConnected(userId) {
-  const set = connectedSockets.get(userId);
-  return !!set && set.size > 0;
-}
-
-function setConnected(userId, socketId, connected) {
-  let set = connectedSockets.get(userId);
-  if (!set) {
-    if (!connected) return;
-    set = new Set();
-    connectedSockets.set(userId, set);
-  }
-  if (connected) set.add(socketId);
-  else set.delete(socketId);
-  if (set.size === 0) connectedSockets.delete(userId);
-}
-
 function notifyOthers(senderId) {
   if (!PUSH_ENABLED) return;
   const otherId = getOtherAccountId(senderId);
@@ -352,32 +328,30 @@ io.on('connection', (socket) => {
     return;
   }
 
-  const wasConnected = isConnected(req.session.user);
-  setConnected(req.session.user, socket.id, true);
-  if (!wasConnected) {
-    // First socket for this user coming up -- tell the other side "online" now.
-    socket.broadcast.emit('presence_update', { userId: req.session.user, online: true, lastSeen: null });
-  }
   // Let this newly-connecting client know the other person's CURRENT status
-  // right away, since presence_update above only fires on a change and a
-  // fresh page load wouldn't otherwise see one.
+  // right away, since presence_update below only fires on a change and a
+  // fresh page load wouldn't otherwise see one. "Online"/calls deliberately
+  // track isActive (chat actually visible + unlocked), not just "socket
+  // connected" -- sitting on the storefront disguise (even right after
+  // signing in) shouldn't show you as online or let a call ring through.
   const peerId = getOtherAccountId(req.session.user);
   if (peerId) {
-    const peerOnline = isConnected(peerId);
-    socket.emit('presence_update', { userId: peerId, online: peerOnline, lastSeen: peerOnline ? null : getLastSeen(peerId) });
+    const peerActive = isActive(peerId);
+    socket.emit('presence_update', { userId: peerId, online: peerActive, lastSeen: peerActive ? null : getLastSeen(peerId) });
   }
 
   // Starts inactive -- the client reports itself active only once the chat
   // is actually shown, unlocked and visible (see the 'presence' handler).
   socket.on('disconnect', () => {
+    const wasActive = isActive(req.session.user);
     setActive(req.session.user, socket.id, false);
-    setConnected(req.session.user, socket.id, false);
     // If a call was in progress and this was the only connection, the other
     // side needs to know it just dropped rather than ringing/hanging forever.
     socket.broadcast.emit('call:ended');
-    // Only truly "last seen" once every socket/tab for this user is gone --
-    // one tab closing while another stays open shouldn't flip them offline.
-    if (!isConnected(req.session.user)) {
+    // Only truly "last seen" if this socket was the one actually counted as
+    // active -- one background tab disconnecting shouldn't flip someone
+    // offline while another tab still has the chat open and unlocked.
+    if (wasActive && !isActive(req.session.user)) {
       const seenAt = Date.now();
       setLastSeen(req.session.user, seenAt);
       socket.broadcast.emit('presence_update', { userId: req.session.user, online: false, lastSeen: seenAt });
@@ -386,7 +360,17 @@ io.on('connection', (socket) => {
 
   socket.on('presence', (payload) => {
     if (!req.session || !req.session.user) return;
+    const wasActive = isActive(req.session.user);
     setActive(req.session.user, socket.id, !!(payload && payload.active));
+    const nowActive = isActive(req.session.user);
+    if (nowActive === wasActive) return;
+    if (nowActive) {
+      socket.broadcast.emit('presence_update', { userId: req.session.user, online: true, lastSeen: null });
+    } else {
+      const seenAt = Date.now();
+      setLastSeen(req.session.user, seenAt);
+      socket.broadcast.emit('presence_update', { userId: req.session.user, online: false, lastSeen: seenAt });
+    }
   });
 
   socket.emit('history', getRecentMessages(req.session.user));
@@ -481,7 +465,10 @@ io.on('connection', (socket) => {
     if (!req.session || !req.session.user) return;
     const callType = payload && payload.callType === 'audio' ? 'audio' : 'video';
     const otherId = getOtherAccountId(req.session.user);
-    if (!otherId || !isConnected(otherId)) {
+    // Requires the other side to have the chat actually open and unlocked
+    // (isActive), not just a connected-but-backgrounded socket -- a call
+    // ringing over the storefront disguise would give the game away.
+    if (!otherId || !isActive(otherId)) {
       socket.emit('call:unavailable');
       return;
     }
